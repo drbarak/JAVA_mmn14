@@ -1,91 +1,53 @@
-
+package ממן_14;
+ 
 /**
  * Write a description of class IntNodeMat here.
  *
- * @author (Zvi Barak ID: 050982479)
- * @version (30.11.2024)
+ * @author (your name)
+ * @version (a version number or a date)
  */
 public class IntNodeMat
 {
-    private int _value;
-    // the neighbours of the IntNodeMat object
-    private IntNodeMat _up, _down, _left, _right;
+    private int _data;
+    private IntNodeMat _nextRow, _nextCol, _prevRow, _prevCol;
 
-    /**
-     * Constructors for objects of class IntNodeMat
-     */
-    public IntNodeMat(IntNodeMat other)   // copy an existing IntNodeMat object
+    public IntNodeMat(int data)
     {
-        if (other == null) return;
-        _up = other._up;
-        _down = other._down;
-        _left = other._left;
-        _right = other._right;
-        _value = other._value;
-    }
-    public IntNodeMat(int value)   // initialise a default IntNodeMat
-    {
-        _up = _down = _left = _right = null;
-        _value = value;
-    }
-    public IntNodeMat()   // initialise a default IntNodeMat
-    {
-        _up = _down = _left = _right = null;
-        _value = Integer.MIN_VALUE;
-    }
-    public int getValue()
-    {
-        return _value;
-    }
-    public IntNodeMat getUp()
-    {
-        return _up;
-    }
-    public IntNodeMat getDown()
-    {
-        return _down;
-    }
-    public IntNodeMat getLeft()
-    {
-        return _left;
-    }
-    public IntNodeMat getRight()
-    {
-        return _right;
-    }
+        _data = data;
+        _nextRow = null;
+        _nextCol = null;
+        _prevRow = null;
+        _prevCol = null;
+    } 
     
-    /**
-     * Method to set the x coordinate of the IntNodeMat, if it is valid
-     *
-     * @param   x   the new x coordinate to set
-     */
-    public void setValue(int value)
+    public IntNodeMat(int data, IntNodeMat nextR, IntNodeMat nextC,
+    IntNodeMat prevR, IntNodeMat prevC)
     {
-        _value = value;
+        _data = data;
+        _nextRow = nextR;
+        _nextCol = nextC;
+        _prevRow = prevR;
+        _prevCol = prevC;
     }
-    public void setUp(IntNodeMat other)
-    {
-        _up = other;
-    }
-    public void setDown(IntNodeMat other)
-    {
-        _down = other;
-    }
-    public void setLeft(IntNodeMat other)
-    {
-        _left = other;
-    }
-    public void setRight(IntNodeMat other)
-    {
-        _right = other;
-    }
-    /**
-     * Method to prepare the IntNodeMat for printing
-     *
-     * @return String the IntNodeMat in the format "(_x,_y)"
-     */
-    public String toString()
-    {
-        return "(" + _value + ")";
-    }
-} // end of class IntNodeMat
+
+    public int getData() {return _data;}
+    
+    public IntNodeMat getNextRow() {return _nextRow;}
+
+    public IntNodeMat getNextCol() {return _nextCol;}
+
+    public IntNodeMat getPrevRow() {return _prevRow;}
+
+    public IntNodeMat getPrevCol() {return _prevCol;}  
+    
+
+    public void setData(int data) {_data = data;}
+    
+    public void setNextRow(IntNodeMat next) {_nextRow = next;}
+
+    public void setNextCol(IntNodeMat next) {_nextCol = next;}
+
+    public void setPrevRow(IntNodeMat next) {_prevRow = next;}
+
+    public void setPrevCol(IntNodeMat next) {_prevCol = next;}
+}
