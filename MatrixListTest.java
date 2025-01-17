@@ -17,12 +17,17 @@ public class MatrixListTest
         //m = new int[][]{{1,2,3,4},{2,16,17,8},{3,17,-18,-19}};
         //m = new int[][]{{1,2,3,4},{2,16,17,18},{3,17,18}}; // not a rectangular
         //m = new int[][]{};
-        int x = 3, y = 10;
+        int x = 10, y = 10;
+        m = new int[x][y];
         for (int i=0; i<x; i++)
         {
             m[i] = new int[y];
             for (int j=0; j < y; j++)
-                m[i][j] = i + j;
+                //m[i][j] = y*i - i + j;
+                if (i < x-1)
+                    m[i][j] = i + j;
+                else
+                    m[i][j] = i - 2 + j + y;
         }
         MatrixList ml = new MatrixList(m);
         System.out.print(ml);   // used toString[] of the class MatrixList
@@ -69,17 +74,22 @@ public class MatrixListTest
         if (run % 10 >= 1)
         {
             p("\n------ how many ------");
+            /*
             p("The number of times the number -1 appears in the matrix is "+ ml.howManyX(-1));
             p("The number of times the number 0 appears in the matrix is "+ ml.howManyX(0));
             p("The number of times the number 1 appears in the matrix is "+ ml.howManyX(1));
-/*            
             p(ml.howManyX(2));
             p(ml.howManyX(3));
             p(ml.howManyX(16));
             p(ml.howManyX(15));
-*/            
+            */
+            p("The number of times the number 6 appears in the matrix is "+ ml.howManyX(6));
             p("The number of times the number 8 appears in the matrix is "+ ml.howManyX(8));
             p("The number of times the number 20 appears in the matrix is "+ ml.howManyX(20));
+            p("The number of times the number 10 appears in the matrix is "+ ml.howManyX(10));
+            p("The number of times the number 9 appears in the matrix is "+ ml.howManyX(9));
+            p("The number of times the number 17 appears in the matrix is "+ ml.howManyX(17));
+            p("The number of times the number 18 appears in the matrix is "+ ml.howManyX(18));
         }
     }
     /* method howManyX using recursion and no restrictions on values of the

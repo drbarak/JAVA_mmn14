@@ -96,25 +96,29 @@ public class MatrixList
     {
         curCell.setPrevCol(next);
     }
-
+    
     private int getValue(IntNodeMat curCell)
     {
         return curCell.getData();
     }
     private IntNodeMat getUp(IntNodeMat curCell)
     {
+        if (curCell == null) return null;
         return curCell.getPrevRow();
     }
     private IntNodeMat getDown(IntNodeMat curCell)
     {
+        if (curCell == null) return null;
         return curCell.getNextRow();
     }
     private IntNodeMat getLeft(IntNodeMat curCell)
     {
-        return curCell.getPrevRow();
+        if (curCell == null) return null;
+        return curCell.getPrevCol();
     }
     private IntNodeMat getRight(IntNodeMat curCell)
     {
+        if (curCell == null) return null;
         return curCell.getNextCol();
     }
     
@@ -222,12 +226,17 @@ public class MatrixList
      *                not found, or is empty or Integer.MIN_VALUE if the
      *                matrix is not sorted as expected.
      *
-     * The worst case is when the number is not found and because we are searching
-     * sequentially then max number of searches n*m where n is the number
-     * of rows and m is the number of colums.
+     * The worst case is when the number is equal to the value of the last
+     * cell in the last row-1, and then it is the first number in the last row,
+     * since then the search is over the full first row = n, and then down the
+     * next rows from the first to last row-1, where it find the first occurence
+     * of x. It then moves left a column and down to the next row, which is the 
+     * last row. So it moved down m-2 rows, then moved left and down
+     * to the next row, and then left to the begining of the row, for another 
+     * n-1 cells. Total of n + m - 2  + n - 1 = 2n + m - 3.
      * 
-     * Time complexity of O(n*m)
-     * Space complexity of 1+1+1+1=4 -> O(1)
+     * Time complexity of O(2n+m-3) -> O(n) or O(m) if m > 2n.
+     * Space complexity of 1+1+1+1+1+1=6 -> O(1)
      */
     public int howManyX(int x)
     {
@@ -239,38 +248,134 @@ public class MatrixList
         // cell, and the same for the other sub-sections.
         IntNodeMat cell = _m00;
         IntNodeMat firstCellCurRow = cell;
+        IntNodeMat prevCell = cell;
         int curValue = getValue(cell);
         int numX = 0;
+        boolean moveLeft = false;   // are we moving left or right in a row
+        boolean p = false;
+        int count = 0;
         while (cell != null)
         {
+            count++;
+            if (p) p(500, x, curValue, numX);
             if (x > curValue)   // need to move right to the next cell
             {
-                cell = getRight(cell);
+                prevCell = cell;
+                cell = (moveLeft ? getLeft(cell) : getRight(cell));
                 if (cell != null)
-                    curValue = getValue(cell);
-                else // end of a row so move to the next row
                 {
-                    cell = getDown(firstCellCurRow);
-                    firstCellCurRow = cell;
+                    curValue = getValue(cell);
+                    if (false && moveLeft) // no more numbers larger equal thanx so go to next row
+                       cell = getDown(cell); 
+                }
+                else // end of a row so move to the next row, 
+                {   // but first make sure the last number in the next row is 
+                    // smaller then x, because otherwise there is no need to
+                    // serach this row because of the numbers there are smaller
+                    // then x, and thus we move to the next row
+                    if (p) p(1000, x, curValue, numX);
+                    cell = getDown(prevCell);
+                    firstCellCurRow = null;
+                    while (cell != null && x >= getValue(cell))
+                    {
+                        count++;
+                        if (p) p(2000, x, getValue(cell), numX);
+                        if (x == getValue(cell))
+                        {
+                            numX++;
+                            cell = getLeft(cell); 
+                            if (p) if (cell != null) p(2500, x, getValue(cell), numX);                            
+                        }
+                        if (cell != null)
+                        {
+                            if (p) p("doing down");
+                            if (p) if (cell != null) p(2600, x, getValue(cell), numX);                            
+                            cell = getDown(cell);
+                            firstCellCurRow = null;
+                            if (p) if (cell != null) p(2610, x, getValue(cell), numX);                            
+                        }
+                            // the next cell at the next row but to left of the 
+                            // current column because the cell just below the current cell
+                            // its value is larger than the value of the current cell
+                        if (p) if (cell != null) p(3000, x, getValue(cell), numX);
+                    }
+                    if (cell == null)
+                    {
+                        p("count = "+count);
+                        return numX; // end of matrix
+                    }
+                    // found a row that x is not larger than all the numbers to the 
+                    // left of the current column in that row so now search backward to
+                    // find the number that eqaul or less than x
+                    moveLeft = true;
                 }
             }
             else // x smaller or equal curValue
             {
                 if (x == curValue)  // found occurence of x
+                {
                     numX++;
+                    if (moveLeft) // no more numbers larger equal thanx so go to next row
+                       cell = getDown(cell); 
+                }                    
+                    // on the first row of the matrix,
                     // if the current cell is the first in the row and x <= curValue
                     // then since the value of the cell in the next row is larger than
                     // the value of the current cell, it means it is also larger
                     // than x and there is no use in looking further in the matrix
-                if (cell == firstCellCurRow)
+                //if (p) p(moveLeft);
+                //if (p) System.out.println(firstCellCurRow);
+                if (!moveLeft && cell == firstCellCurRow)
                     break;
                     // x <= curValue so no need to look further in this row
-                cell = getDown(firstCellCurRow);
-                firstCellCurRow = cell;
+                if (moveLeft)
+                    cell = getLeft(cell);
+                else
+                {
+                    cell = getDown(cell);
+                    firstCellCurRow = null;
+                    if (p) if (cell != null) p(4000, x, getValue(cell), numX);
+                    // look for number less or equal x by moving let, from
+                    // large number to a smaller number than x
+                    while (cell != null && x <= getValue(cell))
+                    {
+                        count++;
+                        if (p) p(5000, x, getValue(cell), numX);
+                        if (x == getValue(cell))
+                        {
+                            numX++;
+                            cell = getLeft(cell); 
+                            if (p) if (cell != null) p(5500, x, getValue(cell), numX);                            
+                            if (cell != null)
+                            {
+                                if (p) p("doing down");
+                                if (p) if (cell != null) p(5600, x, getValue(cell), numX);                            
+                                cell = getDown(cell);
+                                if (p) if (cell != null) p(5610, x, getValue(cell), numX);                            
+                            }
+                            // the next cell at the next row but to left of the 
+                            // current column because the cell just below the current cell
+                            // its value is larger than the value of the current cell
+                            if (p) if (cell != null) p(6000, x, getValue(cell), numX);
+                        }
+                        else
+                            cell = getLeft(cell);
+                    }
+                    if (cell == null)
+                    {
+                        p("count = "+count);
+                        return numX; // end of matrix
+                    }
+                    // found a row that x is not larger than all the numbers to the 
+                    // left of the current column in that row so now search backward to
+                    // find the number that eqaul or less than x
+                    moveLeft = true;
+                }
             }
             if (cell != null)
                 curValue = getValue(cell);
         }
+        p("count = "+count);
         return numX;
     }
     // A helper method to verify the matrix is sorted properly
