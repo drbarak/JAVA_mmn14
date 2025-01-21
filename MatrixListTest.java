@@ -25,9 +25,15 @@ public class MatrixListTest
             for (int j=0; j < y; j++)
                 //m[i][j] = y*i - i + j;
                 if (i < x-1)
+                {
                     m[i][j] = i + j;
+                    //if (i == 1 && j == y - 3)  m[i][j] = m[i][j-1];
+                }
                 else
+                {
                     m[i][j] = i - 2 + j + y;
+                    //if (j == y - 5) m[i][j] = m[i][j-1];
+                }
         }
         MatrixList ml = new MatrixList(m);
         System.out.print(ml);   // used toString[] of the class MatrixList
@@ -84,6 +90,7 @@ public class MatrixListTest
             p(ml.howManyX(15));
             */
             p("The number of times the number 6 appears in the matrix is "+ ml.howManyX(6));
+            p("The number of times the number 7 appears in the matrix is "+ ml.howManyX(7));
             p("The number of times the number 8 appears in the matrix is "+ ml.howManyX(8));
             p("The number of times the number 20 appears in the matrix is "+ ml.howManyX(20));
             p("The number of times the number 10 appears in the matrix is "+ ml.howManyX(10));
