@@ -59,67 +59,22 @@ public class MatrixList
                 IntNodeMat cell = new IntNodeMat(mat[i][j]); // get cell(i,j)
                 if (j > 0)  // not first column so set left & right pointers
                 {
-                    setLeft(cell, last);
-                    setRight(last, cell);
+                    cell.setPrevCol(last);
+                    last.setNextCol(cell);
                 }
                 else
                     firstInRow = cell;
                 if (i > 0)  // not first row so set up & down pointers
                 {
-                    setUp(cell, prevRow);
-                    setDown(prevRow, cell);
-                    prevRow = getRight(prevRow);
+                    cell.setPrevRow(prevRow);
+                    prevRow.setNextRow(cell);
+                    prevRow = prevRow.getNextCol();
+                    
                 }
                 last = cell;
             }
             last = prevRow = firstInRow;
         }
-    }
-    // helper methods to get/set the value of a cell or the pointers to up/down/left/right
-    private void setValue(IntNodeMat curCell, int value)
-    {
-        curCell.setData(value);
-    }
-    private void setDown(IntNodeMat curCell, IntNodeMat next)
-    {
-        curCell.setNextRow(next);
-    }
-    private void setUp(IntNodeMat curCell, IntNodeMat next)
-    {
-        curCell.setPrevRow(next);
-    }
-    private void setRight(IntNodeMat curCell, IntNodeMat next)
-    {
-        curCell.setNextCol(next);
-    }
-    private void setLeft(IntNodeMat curCell, IntNodeMat next)
-    {
-        curCell.setPrevCol(next);
-    }
-    
-    private int getValue(IntNodeMat curCell)
-    {
-        return curCell.getData();
-    }
-    private IntNodeMat getUp(IntNodeMat curCell)
-    {
-        if (curCell == null) return null;
-        return curCell.getPrevRow();
-    }
-    private IntNodeMat getDown(IntNodeMat curCell)
-    {
-        if (curCell == null) return null;
-        return curCell.getNextRow();
-    }
-    private IntNodeMat getLeft(IntNodeMat curCell)
-    {
-        if (curCell == null) return null;
-        return curCell.getPrevCol();
-    }
-    private IntNodeMat getRight(IntNodeMat curCell)
-    {
-        if (curCell == null) return null;
-        return curCell.getNextCol();
     }
     
     /**
@@ -138,15 +93,15 @@ public class MatrixList
         IntNodeMat cell = _m00;
         for (int _i = 0; _i < i; _i++)
         {
-            cell = getDown(cell);
+            cell = cell.getNextRow();
             if (cell == null) return Integer.MIN_VALUE; // out of bounds
         }
         for (int _i = 0; _i < j; _i++)
         {
-            cell = getRight(cell);
+            cell = cell.getNextCol();
             if (cell == null) return Integer.MIN_VALUE; // out of bounds
         }
-        return getValue(cell);
+        return cell.getData();
     }
     
     /**
@@ -165,15 +120,16 @@ public class MatrixList
         IntNodeMat cell = _m00;
         for (int _i = 0; _i < i; _i++)
         {
-            cell = getDown(cell);
+            cell = cell.getNextRow();
             if (cell == null) return; // out of bounds
         }
         for (int _i = 0; _i < j; _i++)
         {
-            cell = getRight(cell);
+            cell = cell.getNextCol();
             if (cell == null) return;  // out of bounds
         }
-        setValue(cell, num);
+        //setValue(cell, num);
+        cell.setData(num);
     }
     
     /**
@@ -201,11 +157,11 @@ public class MatrixList
     // the node of the first cell in a row.
     private int findMax(IntNodeMat cell, IntNodeMat firstCellCurRow, int max)
     {
-        max = Math.max(max, getValue(cell));
-        cell = getRight(cell);  // move right in the row
+        max = Math.max(max, cell.getData());
+        cell = cell.getNextCol();  // move right in the row
         if (cell == null)   // end of row
         {
-            cell = getDown(firstCellCurRow);   // go to begining of next row
+            cell = firstCellCurRow.getNextRow();   // go to begining of next row
             if (cell == null) return max;
             firstCellCurRow = cell;
         }
@@ -254,7 +210,7 @@ public class MatrixList
         IntNodeMat cell = _m00;
         IntNodeMat firstCellCurRow = cell;
         IntNodeMat prevCell = cell;
-        int curValue = getValue(cell);
+        int curValue = cell.getData();
           // in order to verify did not visit the cell already and that
           // the matrix is valid (each cell to right or down of current cell
           // has larger value)
@@ -262,57 +218,44 @@ public class MatrixList
         int numX = 0;
         boolean moveLeft = false;   // are we moving left or right in a row
         int direction = -1; // keep the last direction moved
-        boolean p = false;
-        int count = 0;
         while (cell != null)
         {
-            count++;
-            if (p) p(500, x, curValue, numX);
             if (x > curValue)   // need to move right to the next cell
             {
                 prevCell = cell;
-                cell = (moveLeft ? getLeft(cell) : getRight(cell));
+                cell = (moveLeft ? cell.getPrevCol() : cell.getNextCol());
                 direction = (moveLeft ? MOVE_LEFT : MOVE_RIGHT);
                 if (cell != null)
                 {
-                    curValue = getValue(cell);
-                    if (p) p(600,curValue, prevValue, direction); 
+                    curValue = cell.getData();
                     if (inValid(curValue, prevValue, direction))
                         return Integer.MIN_VALUE;
                     prevValue = curValue;
-                    /*
-                    if (false && moveLeft) // no more numbers larger equal thanx so go to next row
-                       cell = getDown(cell); 
-                    */
                 }
                 else // end of a row so move to the next row, 
                 {   // but first make sure the last number in the next row is 
                     // smaller then x, because otherwise there is no need to
                     // serach this row because of the numbers there are smaller
                     // then x, and thus we move to the next row
-                    if (p) p(1000, x, curValue, numX);
-                    cell = getDown(prevCell);
+                    cell = prevCell.getNextRow();
                     direction = MOVE_DOWN;
                     firstCellCurRow = null;
                     if (cell != null)
                     {
-                        curValue = getValue(cell);
+                        curValue = cell.getData();
                         if (inValid(curValue, prevValue, direction))
                             return Integer.MIN_VALUE;
                         prevValue = curValue;
                         while (cell != null && x >= curValue)
                         {
-                            count++;
-                            if (p) p(2000, x, curValue, numX);
                             if (x == curValue)
                             {
                                 numX++;
-                                cell = getLeft(cell);
+                                cell = cell.getPrevCol();
                                 direction = MOVE_LEFT;
-                                if (p) if (cell != null) p(2500, x, getValue(cell), numX);                            
                                 if (cell != null)
                                 {
-                                    curValue = getValue(cell);
+                                    curValue = cell.getData();
                                     if (inValid(curValue, prevValue, direction))
                                         return Integer.MIN_VALUE;
                                     prevValue = curValue;
@@ -320,31 +263,24 @@ public class MatrixList
                             }
                             if (cell != null)
                             {
-                                if (p) p("doing down");
-                                if (p) if (cell != null) p(2600, x, getValue(cell), numX);                            
-                                cell = getDown(cell);
+                                cell = cell.getNextRow();
                                 direction = MOVE_DOWN;
                                 firstCellCurRow = null;
-                                if (p) if (cell != null) p(2610, x, getValue(cell), numX);                            
                                 if (cell != null)
                                 {
-                                    curValue = getValue(cell);
+                                    curValue = cell.getData();
                                     if (inValid(curValue, prevValue, direction))
                                         return Integer.MIN_VALUE;
                                     prevValue = curValue;
                                 }
                             }
-                                // the next cell at the next row but to left of the 
-                                // current column because the cell just below the current cell
-                                // its value is larger than the value of the current cell
-                            if (p) if (cell != null) p(3000, x, getValue(cell), numX);
+                        // the next cell at the next row but to left of the 
+                        // current column because the cell just below the current cell
+                        // its value is larger than the value of the current cell
                         }
                     }
                     if (cell == null)
-                    {
-                        p("count = "+count);
                         return numX; // end of matrix
-                    }
                     // found a row that x is not larger than all the numbers to the 
                     // left of the current column in that row so now search backward to
                     // find the number that eqaul or less than x
@@ -356,16 +292,13 @@ public class MatrixList
                 if (x == curValue)  // found occurence of x
                 {
                     numX++;
-                    if (p) p(4800, curValue, prevValue, numX);
                     if (moveLeft) // no more numbers larger equal than x so go to next row
                     {
-                        if (p) p(4810, curValue, prevValue, numX);
-                        cell = getDown(cell);
-                        if (p) p(4820, curValue, prevValue, numX);
+                        cell = cell.getNextRow();
                         direction = MOVE_DOWN;
                         if (cell != null)
                         {
-                            curValue = getValue(cell);
+                            curValue = cell.getData();
                             if (inValid(curValue, prevValue, direction))
                                 return Integer.MIN_VALUE;
                             prevValue = curValue;
@@ -377,19 +310,17 @@ public class MatrixList
                     // then since the value of the cell in the next row is larger than
                     // the value of the current cell, it means it is also larger
                     // than x and there is no use in looking further in the matrix
-                //if (p) p(moveLeft);
-                //if (p) System.out.println(firstCellCurRow);
                 if (!moveLeft && cell == firstCellCurRow)
                     break;
                     // x <= curValue so no need to look further in this row
                 if (moveLeft)
                 {
-                    cell = getLeft(cell);
+                    if (cell != null) 
+                        cell = cell.getPrevCol();
                     if (cell != null)
                     {
-                        curValue = getValue(cell);
+                        curValue = cell.getData();
                         direction = MOVE_LEFT;
-                        if (p) p(4900, curValue, prevValue);
                         if (inValid(curValue, prevValue, direction))
                             return Integer.MIN_VALUE;
                         prevValue = curValue;
@@ -397,75 +328,64 @@ public class MatrixList
                 }
                 else
                 {
-                    cell = getDown(cell);
+                    cell = cell.getNextRow();
                     direction = MOVE_DOWN;
                     firstCellCurRow = null;
-                    if (p) if (cell != null) p(4000, x, getValue(cell), numX);
                     // look for number less or equal x by moving let, from
                     // large number to a smaller number than x
-                    while (cell != null && x <= getValue(cell))
+                    while (cell != null && x <= cell.getData())
                     {
-                        count++;
-                        curValue = getValue(cell);
+                        curValue = cell.getData();
                         if (inValid(curValue, prevValue, direction))
                             return Integer.MIN_VALUE;
                         prevValue = curValue;
-                        if (p) p(5000, x, curValue, numX);
                         if (x == curValue)
                         {
                             numX++;
-                            cell = getLeft(cell); 
+                            cell = cell.getPrevCol();
                             direction = MOVE_LEFT;
-                            if (p) if (cell != null) p(5500, x, getValue(cell), numX);                            
                             if (cell != null)
                             {
-                                curValue = getValue(cell);
+                                curValue = cell.getData();
                                 if (inValid(curValue, prevValue, direction))
                                     return Integer.MIN_VALUE;
                                 prevValue = curValue;
-                                if (p) p("doing down 2");
-                                if (p) if (cell != null) p(5600, x, getValue(cell), numX);                            
-                                cell = getDown(cell);
+                                cell = cell.getNextRow();
                                 direction = MOVE_DOWN;
-                                if (p) if (cell != null) p(5610, x, getValue(cell), numX);                            
                             }
                             // the next cell at the next row but to left of the 
                             // current column because the cell just below the current cell
                             // its value is larger than the value of the current cell
-                            if (p) if (cell != null) p(6000, x, getValue(cell), numX);
                         }
                         else
                         {
-                            cell = getLeft(cell);
+                            cell = cell.getPrevCol();
                             direction = MOVE_LEFT;
                             prevValue = curValue;
                         }
                     }
                     if (cell == null)
-                    {
-                        p("count = "+count);
                         return numX; // end of matrix
-                    }
                     // found a row that x is not larger than all the numbers to the 
                     // left of the current column in that row so now search backward to
                     // find the number that eqaul or less than x
                     moveLeft = true;
-                    curValue = getValue(cell);
+                    curValue = cell.getData();
                     if (inValid(curValue, prevValue, direction))
                         return Integer.MIN_VALUE;
                     prevValue = curValue;
                 }
             }
             if (cell != null)
-                curValue = getValue(cell);
+                curValue = cell.getData();
         }
-        p("count = "+count);
         return numX;
     }
     // A helper method to verify the matrix is built properly such that
-    // each move to the left or down moves to a cell whose value is greater
+    // each move to the right or down moves to a cell whose value is greater
     // than the previous one and moving to the left moves to a cell whose 
-    // value is smaller and than the previous one.
+    // value is smaller and than the previous one (no check for up because
+    // the method does not use that direction).
     // Doing these checks also gaurantees that we do not move to a cell
     // we visited already, becuase it's value will be incosistent with the
     // above checks, because it's value is smaller than the current value.
@@ -485,6 +405,7 @@ public class MatrixList
         }
         return false;
     }
+    
     /**
      *  A method that returns a string that represents this matrix.
      *  
@@ -502,11 +423,11 @@ public class MatrixList
         String s = "";
         while (cell != null)
         {
-            s += getValue(cell);
-            cell = getRight(cell);
+            s += cell.getData();
+            cell = cell.getNextCol();
             if (cell == null)   // end of row
             {
-                cell = getDown(firstCellCurRow);
+                cell = firstCellCurRow.getNextRow();
                 firstCellCurRow = cell;
                 s += "\n";
             }
@@ -515,4 +436,4 @@ public class MatrixList
         }
         return s;
     }
-}   // end of class MatrixList
+}// end of class MatrixList
