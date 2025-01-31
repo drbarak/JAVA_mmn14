@@ -41,7 +41,7 @@ public class MatrixListTest
         */
         MatrixList ml = new MatrixList(m);
         p(ml.toString());
-        int run = 11;//1000+100+10+1;
+        int run = 1111;//1000+100+10+1;
         if (run >= 1000)
         {
             p("------ get ------");

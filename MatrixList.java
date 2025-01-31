@@ -5,7 +5,7 @@ import static Library.Print.p;
 /**
  * A class to maintain a chained list represnted by a 2-dim rectangular array,
  * repersented by a matrix, of whole numbers.
- * Each cell in the matrix, represet a node in the list, and it has 4
+ * Each cell in the matrix, represent a node in the list, and it has 4
  * connections for the possible 4 cells around it, in the up/down/left/right
  * directions.
  *
@@ -14,7 +14,7 @@ import static Library.Print.p;
  */
 public class MatrixList
 {
-    IntNodeMat _m00;    // the head pf the list. pointing to the first cell (0,0) 
+    IntNodeMat _m00;    // the head pf the list pointing to the first cell (0,0) 
     
     /**
      * An empty constructor for objects of class MatrixList that initializes
@@ -48,11 +48,13 @@ public class MatrixList
         IntNodeMat firstInRow = last; // keep first cell in a row
         for (int i = 0; i < mat.length; i++)
         {
+               // verifies the matrix is rectangular
             if (i > 0 && mat[0].length != mat[i].length)
             {
-                _m00 = null;   // verifies the matrix is rectangular
+                _m00 = null;
                 return;
             }
+                // now create the chained list
             for (int j = 0; j < mat[0].length; j++)
             {
                 if (i == 0 && j == 0) continue; // skip cell (0,0) since already taken care of above
@@ -68,8 +70,7 @@ public class MatrixList
                 {
                     cell.setPrevRow(prevRow);
                     prevRow.setNextRow(cell);
-                    prevRow = prevRow.getNextCol();
-                    
+                    prevRow = prevRow.getNextCol(); // move cell above to next column
                 }
                 last = cell;
             }
@@ -84,24 +85,30 @@ public class MatrixList
      * @param   int j   - the parameter representing the column number of the cell.
      * 
      * @return  the value of the cell, or Integer.MIN_VALUE if no list, or invalid
-     *                  input, or row out of bounds, or columd out of bounds.
+     *                  input, or row out of bounds, or column out of bounds.
      */
     public int getData_i_j(int i, int j)
     {
-        if (_m00 == null) return Integer.MIN_VALUE;   // verifies the list exists
-        if (i < 0 || j < 0) return Integer.MIN_VALUE;   // verifies the input is valid
+        IntNodeMat cell = getCell_i_j(i, j);
+        if (cell == null) return Integer.MIN_VALUE; // invalid
+        return cell.getData();
+    }
+    private IntNodeMat getCell_i_j(int i, int j)
+    {
+        if (_m00 == null) return null;   // verifies the list exists
+        if (i < 0 || j < 0) return null;   // verifies the input is valid
         IntNodeMat cell = _m00;
         for (int _i = 0; _i < i; _i++)
         {
             cell = cell.getNextRow();
-            if (cell == null) return Integer.MIN_VALUE; // out of bounds
+            if (cell == null) return null; // out of bounds
         }
-        for (int _i = 0; _i < j; _i++)
+        for (int _j = 0; _j < j; _j++)
         {
             cell = cell.getNextCol();
-            if (cell == null) return Integer.MIN_VALUE; // out of bounds
+            if (cell == null) return null; // out of bounds
         }
-        return cell.getData();
+        return cell;
     }
     
     /**
@@ -115,33 +122,21 @@ public class MatrixList
      */
     public void setData_i_j(int num, int i, int j)
     {
-        if (_m00 == null) return;   // verifies the list exists
-        if (i < 0 || j < 0) return;   // verifies the input is valid
-        IntNodeMat cell = _m00;
-        for (int _i = 0; _i < i; _i++)
-        {
-            cell = cell.getNextRow();
-            if (cell == null) return; // out of bounds
-        }
-        for (int _i = 0; _i < j; _i++)
-        {
-            cell = cell.getNextCol();
-            if (cell == null) return;  // out of bounds
-        }
-        //setValue(cell, num);
+        IntNodeMat cell = getCell_i_j(i, j);
+        if (cell == null) return; // invalid
         cell.setData(num);
     }
     
     /**
      * A recursive method to find the largest value in the matrix. 
-     *  If no list or empty list, the method returns Integer.MIN_VALUE.
+     * If no list or empty list, the method returns Integer.MIN_VALUE.
      * 
-     * @param   int j   - the argest value or Integer.MIN_VALUE.
+     * @param   int j   - the largest value or Integer.MIN_VALUE.
      * 
      */
     public int findMax()
     {
-        if (_m00 == null) return Integer.MIN_VALUE;   // verifies the list exists
+        if (_m00 == null) return Integer.MIN_VALUE;   // verifies the list exists and not empty
         return findMax(_m00, _m00, Integer.MIN_VALUE); // starts at cell (0,0)
     }
     // A helper recursive method that finds the max between previou max and the
